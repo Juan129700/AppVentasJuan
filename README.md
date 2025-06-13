@@ -1,3 +1,3 @@
 # AppVentasJuan
 
-App básica para iniciar tu sistema de registro de ventas.
+App con formulario para registrar ventas.

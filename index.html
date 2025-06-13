@@ -5,9 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AppVentasJuan</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    body { font-family: sans-serif; padding: 1em; background: #f2f2f2; }
+    form { background: white; padding: 1em; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input, button { margin-top: 0.5em; padding: 0.5em; width: 100%; border: 1px solid #ccc; border-radius: 5px; }
+    button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
+    .ventas { margin-top: 1em; }
+    .venta { background: white; padding: 0.5em; margin-bottom: 0.5em; border-left: 5px solid green; }
+  </style>
 </head>
 <body>
-  <h1>Bienvenido a AppVentasJuan</h1>
-  <p>Esta es tu app de control de ventas. Pronto agregaremos más funciones como registros, pagos y gráficas.</p>
+  <h1>Registrar Venta</h1>
+  <form id="form">
+    <input type="text" id="producto" placeholder="Producto" required />
+    <input type="number" id="cantidad" placeholder="Cantidad" required />
+    <input type="number" id="compra" placeholder="Precio de compra" required />
+    <input type="number" id="venta" placeholder="Precio de venta" required />
+    <button type="submit">Guardar Venta</button>
+  </form>
+
+  <div class="ventas" id="ventas"></div>
+
+  <script>
+    const form = document.getElementById('form');
+    const ventasDiv = document.getElementById('ventas');
+
+    function mostrarVentas() {
+      const ventas = JSON.parse(localStorage.getItem('ventas') || "[]");
+      ventasDiv.innerHTML = ventas.map(v => `
+        <div class="venta">
+          <strong>${v.producto}</strong> - Cant: ${v.cantidad} - Utilidad: $${(v.venta - v.compra) * v.cantidad}
+        </div>
+      `).join("");
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const producto = document.getElementById('producto').value;
+      const cantidad = parseInt(document.getElementById('cantidad').value);
+      const compra = parseFloat(document.getElementById('compra').value);
+      const venta = parseFloat(document.getElementById('venta').value);
+      const nuevaVenta = { producto, cantidad, compra, venta, fecha: new Date().toISOString() };
+      const ventas = JSON.parse(localStorage.getItem('ventas') || "[]");
+      ventas.push(nuevaVenta);
+      localStorage.setItem('ventas', JSON.stringify(ventas));
+      form.reset();
+      mostrarVentas();
+    });
+
+    mostrarVentas();
+  </script>
 </body>
 </html>
