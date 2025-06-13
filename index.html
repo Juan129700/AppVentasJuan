@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AppVentasJuan</title>
   <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: sans-serif; padding: 1em; background: #f2f2f2; }
     form { background: white; padding: 1em; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     input, button { margin-top: 0.5em; padding: 0.5em; width: 100%; border: 1px solid #ccc; border-radius: 5px; }
     button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
-    .ventas { margin-top: 1em; }
+    .ventas, .graficas { margin-top: 1em; }
     .venta { background: white; padding: 0.5em; margin-bottom: 0.5em; border-left: 5px solid green; }
   </style>
 </head>
@@ -25,6 +26,9 @@
   </form>
 
   <div class="ventas" id="ventas"></div>
+  <div class="graficas">
+    <canvas id="graficaUtilidad" width="400" height="200"></canvas>
+  </div>
 
   <script>
     const form = document.getElementById('form');
@@ -39,6 +43,40 @@
       `).join("");
     }
 
+    function actualizarGrafica() {
+      const ventas = JSON.parse(localStorage.getItem('ventas') || "[]");
+      const resumen = {};
+      ventas.forEach(v => {
+        const util = (v.venta - v.compra) * v.cantidad;
+        if (!resumen[v.producto]) resumen[v.producto] = 0;
+        resumen[v.producto] += util;
+      });
+
+      const labels = Object.keys(resumen);
+      const datos = Object.values(resumen);
+
+      const ctx = document.getElementById('graficaUtilidad').getContext('2d');
+      if (window.miGrafica) window.miGrafica.destroy();
+      window.miGrafica = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Utilidad por producto',
+            data: datos,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
     form.addEventListener('submit', e => {
       e.preventDefault();
       const producto = document.getElementById('producto').value;
@@ -51,9 +89,11 @@
       localStorage.setItem('ventas', JSON.stringify(ventas));
       form.reset();
       mostrarVentas();
+      actualizarGrafica();
     });
 
     mostrarVentas();
+    actualizarGrafica();
   </script>
 </body>
 </html>

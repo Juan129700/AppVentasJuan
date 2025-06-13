@@ -1,3 +1,3 @@
 # AppVentasJuan
 
-App con formulario para registrar ventas.
+App con formulario, ventas y gráficas.
