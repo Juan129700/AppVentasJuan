@@ -1,3 +1,3 @@
-# AppVentasJuan
+# AppVentasJuan V2
 
-App con formulario, ventas y gráficas.
+Versión con decimales y totales diarios, semanales, mensuales.

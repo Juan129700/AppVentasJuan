@@ -8,39 +8,60 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: sans-serif; padding: 1em; background: #f2f2f2; }
-    form { background: white; padding: 1em; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    form, .resumen { background: white; padding: 1em; margin-top: 1em; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     input, button { margin-top: 0.5em; padding: 0.5em; width: 100%; border: 1px solid #ccc; border-radius: 5px; }
     button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
-    .ventas, .graficas { margin-top: 1em; }
     .venta { background: white; padding: 0.5em; margin-bottom: 0.5em; border-left: 5px solid green; }
+    canvas { margin-top: 2em; }
   </style>
 </head>
 <body>
   <h1>Registrar Venta</h1>
   <form id="form">
     <input type="text" id="producto" placeholder="Producto" required />
-    <input type="number" id="cantidad" placeholder="Cantidad" required />
-    <input type="number" id="compra" placeholder="Precio de compra" required />
-    <input type="number" id="venta" placeholder="Precio de venta" required />
+    <input type="number" id="cantidad" step="0.01" placeholder="Cantidad (puede ser decimal)" required />
+    <input type="number" id="compra" step="0.01" placeholder="Precio de compra" required />
+    <input type="number" id="venta" step="0.01" placeholder="Precio de venta" required />
     <button type="submit">Guardar Venta</button>
   </form>
 
-  <div class="ventas" id="ventas"></div>
+  <div class="resumen" id="resumen">
+    <h2>Totales</h2>
+    <p><strong>Día:</strong> $<span id="totalDia">0</span></p>
+    <p><strong>Semana:</strong> $<span id="totalSemana">0</span></p>
+    <p><strong>Mes:</strong> $<span id="totalMes">0</span></p>
+  </div>
+
   <div class="graficas">
     <canvas id="graficaUtilidad" width="400" height="200"></canvas>
   </div>
 
   <script>
     const form = document.getElementById('form');
-    const ventasDiv = document.getElementById('ventas');
 
-    function mostrarVentas() {
+    function mostrarTotales() {
       const ventas = JSON.parse(localStorage.getItem('ventas') || "[]");
-      ventasDiv.innerHTML = ventas.map(v => `
-        <div class="venta">
-          <strong>${v.producto}</strong> - Cant: ${v.cantidad} - Utilidad: $${(v.venta - v.compra) * v.cantidad}
-        </div>
-      `).join("");
+      const hoy = new Date();
+      let totalDia = 0, totalSemana = 0, totalMes = 0;
+
+      ventas.forEach(v => {
+        const fecha = new Date(v.fecha);
+        const utilidad = (v.venta - v.compra) * v.cantidad;
+
+        if (fecha.toDateString() === hoy.toDateString()) totalDia += utilidad;
+
+        const inicioSemana = new Date(hoy);
+        inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+        if (fecha >= inicioSemana) totalSemana += utilidad;
+
+        if (fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear()) {
+          totalMes += utilidad;
+        }
+      });
+
+      document.getElementById("totalDia").textContent = totalDia.toFixed(2);
+      document.getElementById("totalSemana").textContent = totalSemana.toFixed(2);
+      document.getElementById("totalMes").textContent = totalMes.toFixed(2);
     }
 
     function actualizarGrafica() {
@@ -54,7 +75,6 @@
 
       const labels = Object.keys(resumen);
       const datos = Object.values(resumen);
-
       const ctx = document.getElementById('graficaUtilidad').getContext('2d');
       if (window.miGrafica) window.miGrafica.destroy();
       window.miGrafica = new Chart(ctx, {
@@ -64,15 +84,13 @@
           datasets: [{
             label: 'Utilidad por producto',
             data: datos,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1
           }]
         },
         options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
+          scales: { y: { beginAtZero: true } }
         }
       });
     }
@@ -80,7 +98,7 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
       const producto = document.getElementById('producto').value;
-      const cantidad = parseInt(document.getElementById('cantidad').value);
+      const cantidad = parseFloat(document.getElementById('cantidad').value);
       const compra = parseFloat(document.getElementById('compra').value);
       const venta = parseFloat(document.getElementById('venta').value);
       const nuevaVenta = { producto, cantidad, compra, venta, fecha: new Date().toISOString() };
@@ -88,11 +106,11 @@
       ventas.push(nuevaVenta);
       localStorage.setItem('ventas', JSON.stringify(ventas));
       form.reset();
-      mostrarVentas();
+      mostrarTotales();
       actualizarGrafica();
     });
 
-    mostrarVentas();
+    mostrarTotales();
     actualizarGrafica();
   </script>
 </body>
