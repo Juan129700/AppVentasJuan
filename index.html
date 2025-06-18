@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,10 +9,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: sans-serif; padding: 1em; background: #f2f2f2; }
-    form, .resumen { background: white; padding: 1em; margin-top: 1em; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    form, .resumen, .ventas, .graficas { background: white; padding: 1em; margin-top: 1em; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     input, button { margin-top: 0.5em; padding: 0.5em; width: 100%; border: 1px solid #ccc; border-radius: 5px; }
     button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
-    .venta { background: white; padding: 0.5em; margin-bottom: 0.5em; border-left: 5px solid green; }
+    .venta { background: #f9f9f9; padding: 0.5em; margin-bottom: 0.5em; border-left: 5px solid green; }
     canvas { margin-top: 2em; }
   </style>
 </head>
@@ -30,6 +31,11 @@
     <p><strong>Día:</strong> $<span id="totalDia">0</span></p>
     <p><strong>Semana:</strong> $<span id="totalSemana">0</span></p>
     <p><strong>Mes:</strong> $<span id="totalMes">0</span></p>
+  </div>
+
+  <div class="ventas" id="ventas">
+    <h2>Historial de Ventas</h2>
+    <div id="listaVentas"></div>
   </div>
 
   <div class="graficas">
@@ -95,6 +101,20 @@
       });
     }
 
+    function mostrarHistorial() {
+      const lista = document.getElementById('listaVentas');
+      lista.innerHTML = "";
+      const ventas = JSON.parse(localStorage.getItem('ventas') || "[]");
+      ventas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      ventas.forEach(v => {
+        const fecha = new Date(v.fecha).toLocaleString();
+        const div = document.createElement('div');
+        div.className = 'venta';
+        div.innerHTML = `<strong>${v.producto}</strong><br> Cantidad: ${v.cantidad}<br> Compra: $${v.compra}<br> Venta: $${v.venta}<br> Fecha: ${fecha}`;
+        lista.appendChild(div);
+      });
+    }
+
     form.addEventListener('submit', e => {
       e.preventDefault();
       const producto = document.getElementById('producto').value;
@@ -108,10 +128,12 @@
       form.reset();
       mostrarTotales();
       actualizarGrafica();
+      mostrarHistorial();
     });
 
     mostrarTotales();
     actualizarGrafica();
+    mostrarHistorial();
   </script>
 </body>
 </html>

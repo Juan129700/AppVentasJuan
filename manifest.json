@@ -1,17 +1,10 @@
+
 {
+  "name": "AppVentasJuan",
   "short_name": "VentasJuan",
-  "name": "App de Ventas Juan",
-  "icons": [{
-    "src": "icon-192.png",
-    "type": "image/png",
-    "sizes": "192x192"
-  }, {
-    "src": "icon-512.png",
-    "type": "image/png",
-    "sizes": "512x512"
-  }],
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "description": "App de registro de ventas y utilidades.",
+  "icons": []
 }
