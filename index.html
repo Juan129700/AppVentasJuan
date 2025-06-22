@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: sans-serif; padding: 1em; background: #f2f2f2; }
-    form, .resumen, .filtro, .graficas { background: white; padding: 1em; margin-top: 1em; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    form, .resumen, .filtro, .graficas, .importar { background: white; padding: 1em; margin-top: 1em; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     input, button { margin-top: 0.5em; padding: 0.5em; width: 100%; border: 1px solid #ccc; border-radius: 5px; }
     button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
     canvas { margin-top: 2em; }
@@ -39,6 +39,12 @@
     <button onclick="consultarPeriodo()">Consultar</button>
     <p><strong>Venta Total:</strong> $<span id="ventaPeriodo">0</span></p>
     <p><strong>Utilidad Total:</strong> $<span id="utilidadPeriodo">0</span></p>
+  </div>
+
+  <div class="importar">
+    <h2>Importar CSV</h2>
+    <input type="file" id="archivoCSV" accept=".csv" />
+    <button onclick="importarCSV()">Importar Ventas</button>
   </div>
 
   <div class="graficas">
@@ -123,13 +129,41 @@
       document.getElementById("utilidadPeriodo").textContent = totalUtilidad.toFixed(2);
     }
 
+    function importarCSV() {
+      const archivo = document.getElementById("archivoCSV").files[0];
+      if (!archivo) return;
+
+      const lector = new FileReader();
+      lector.onload = function(e) {
+        const lineas = e.target.result.split("\n").filter(l => l.trim() !== "");
+        const ventas = JSON.parse(localStorage.getItem("ventas") || "[]");
+        for (let i = 1; i < lineas.length; i++) {
+          const [producto, cantidad, compra, venta, fecha] = lineas[i].split(",");
+          ventas.push({
+            producto,
+            cantidad: parseFloat(cantidad),
+            compra: parseFloat(compra),
+            venta: parseFloat(venta),
+            fecha
+          });
+        }
+        localStorage.setItem("ventas", JSON.stringify(ventas));
+        mostrarTotales();
+        actualizarGrafica();
+        alert("Ventas importadas correctamente.");
+      };
+      lector.readAsText(archivo);
+    }
+
     form.addEventListener('submit', e => {
       e.preventDefault();
       const producto = document.getElementById('producto').value;
       const cantidad = parseFloat(document.getElementById('cantidad').value);
       const compra = parseFloat(document.getElementById('compra').value);
       const venta = parseFloat(document.getElementById('venta').value);
-      const nuevaVenta = { producto, cantidad, compra, venta, fecha: new Date().toISOString() };
+      const ahora = new Date();
+      const fechaLocal = ahora.toISOString().split('T')[0] + 'T' + ahora.toTimeString().split(' ')[0];
+      const nuevaVenta = { producto, cantidad, compra, venta, fecha: fechaLocal };
       const ventas = JSON.parse(localStorage.getItem('ventas') || "[]");
       ventas.push(nuevaVenta);
       localStorage.setItem('ventas', JSON.stringify(ventas));

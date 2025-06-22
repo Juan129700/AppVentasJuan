@@ -5,6 +5,6 @@
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "description": "App de control de ventas con consulta por periodo.",
+  "description": "App de ventas con carga por CSV y fecha corregida.",
   "icons": []
 }
