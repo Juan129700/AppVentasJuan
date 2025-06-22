@@ -5,6 +5,6 @@
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "description": "App de registro de ventas y utilidades.",
+  "description": "App de control de ventas con consulta por periodo.",
   "icons": []
 }
